@@ -1,0 +1,12 @@
+name = Twitter Post
+description = Enables posting to twitter
+core = 7.x
+dependencies[] = twitter
+configure = admin/config/services/twitter/post
+
+; Information added by drupal.org packaging script on 2012-12-31
+version = "7.x-5.2"
+core = "7.x"
+project = "twitter"
+datestamp = "1356973778"
+

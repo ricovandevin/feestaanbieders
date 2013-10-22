@@ -1,0 +1,111 @@
+<?php
+function fa_tools_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
+  if ($entity_type == 'user') {
+    $targets['md5pass'] = array(
+      'name' => t('MD5\'ed password'),
+      'description' => t('The already MD5\'ed user password.'),
+      'callback' => 'first_benefit_feeds_password_support_set_target',
+    );
+    $targets['pass'] = array(
+      'name' => t('Plain text password'),
+      'description' => t('Plain text password that will get encrypted by Drupal.'),
+    );
+  } 
+}
+
+function fa_tools_set_target( $source, &$entity, $target, $password_hash){//watchdog('YAP', 'yap_tools_set_target()');
+  // Saving password hash in the entity
+  if (empty($password_hash)) {
+    return;
+  }
+  $entity->feeds_imported_md5_hash = $password_hash;
+}
+
+function fa_tools_user_insert(&$edit, $account, $category) {//watchdog('YAP', serialize($account));
+  // Force the saved MD5 hash to the user after the user has been inserted and the UID is known
+ 
+  if( isset( $account->md5pass ) ) {
+    require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
+      // Indicate an updated password.
+      db_update('users')
+        ->fields(array('pass' => $account->md5pass))
+        ->condition('uid', $account->uid)
+        ->execute();
+  }
+}
+
+function fa_tools_form_company_node_form_alter(&$form, &$form_state, $form_id){
+    global $user;
+    //add ajax callbacks to some form elements
+    $form['field_type'][LANGUAGE_NONE]['#ajax'] = array(
+        'callback' => 'fa_tools_rebuild_form_callback',
+        'wrapper' => 'company-node-form'
+    );
+    
+    //$form['field_categories'][LANGUAGE_NONE]['#ajax'] = array(
+        //'callback' => 'fa_tools_rebuild_form_callback',
+        //'wrapper' => 'company-node-form'
+    //);
+    
+    //show/hide some form elements based on type of subscription
+    if(($form['field_type'][LANGUAGE_NONE][0]['value'] == 'free') || ($form_state['values']['field_type'][LANGUAGE_NONE][0]['value'] == 'free')){
+        $form['field_pictures']['#access'] = false;
+        
+        $form['field_categories'][LANGUAGE_NONE]['#description'] = 'Gratis vermeldingen mogen gratis in 1 rubriek worden geplaatst, extra rubrieken worden gefactureerd à <strong>€ 10 excl. btw per rubriek per jaar</strong>. Kies een <strong>PRO vermelding</strong> en plaats uw vermelding gratis in <strong>2 rubrieken</strong>!';
+        
+        $form['field_tags'][LANGUAGE_NONE]['#description'] = 'Trefwoorden voor gratis vermeldingen worden gefactureerd à <strong>€ 10 excl. btw per 5 trefwoorden per jaar</strong>. Kies een <strong>PRO vermelding</strong> en koppel gratis <strong>5 trefwoorden</strong> aan uw vermelding!';
+    }
+    //else{
+        
+    //}
+    
+    //calculate fee
+    //$fee = 0;
+    
+    //if($form_state['values']['field_type'][LANGUAGE_NONE][0]['value'] == 'pro'){
+        //$fee += 40;
+    //}
+    
+    //$free_categories = ($form_state['values']['field_type'][LANGUAGE_NONE][0]['value'] == 'pro')?2:1;
+    //$fee += (count($form_state['values']['field_categories'][LANGUAGE_NONE]) - $free_categories) * 10;
+    
+    //dsm($fee);
+    
+    //dsm($form);
+    //dsm($form_state);
+    
+    if(arg(1) == 'add'){
+        $form['twitter']['post']['#default_value'] = 1;
+        $form['fb_stream']['fb_stream_do_post']['#value'] = 1;
+        $form['fb_stream']['fb_stream_message']['#default_value'] = 'Nieuwe Feestaanbieder: ';
+        if(!in_array('administrator', $user->roles)){
+            $form['twitter']['#prefix'] = '<div class="element-invisible">' . $form['twitter']['#prefix'];
+            $form['twitter']['#suffix'] .= '</div>';
+            $form['fb_stream']['#prefix'] = '<div class="element-invisible">' . $form['fb_stream']['#prefix'];
+            $form['fb_stream']['#suffix'] .= '</div>';
+        }
+    }
+    else{
+        $form['twitter']['#access'] = 0;
+        $form['fb_stream']['#access'] = 0;
+    }
+    
+    //$form['#suffix'] .= '<div style="display:none;">' . print_r($form, true) . '</div>';
+}
+
+function fa_tools_rebuild_form_callback($form, $form_state){
+    return $form;
+}
+
+function fa_tools_form_user_register_form_alter(&$form, &$form_state, $form_id){
+    $form['#prefix'] = '<p>Wanneer u inschrijft als <strong>feestaanbieder</strong> krijgt u na bevestiging van uw e-mailadres toegang tot een dashboard van waaruit u uw vermelding kunt toevoegen en beheren.</p>';
+}
+
+function fa_tools_js_alter(&$javascript){
+    //$javascript['settings']['data'][4]['lightbox2']['iframe_height'] = '80%';
+    $javascript['settings']['data'][4]['lightbox2']['box_color'] = 'transparent';
+    //cookieconsent
+    $javascript[1]['#attributes']['class'][] = 'cc-onconsent-analytics';
+
+    //print_r($javascript);
+}

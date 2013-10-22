@@ -1,0 +1,8 @@
+name = Feestaanbieders.nl tools
+description = Implements some custom tools for Feestaanbieders.nl
+package = Other
+dependencies[] = feeds
+core = 7.x
+
+; Base module files
+files[] = fa_tools.module

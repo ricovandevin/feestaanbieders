@@ -1,0 +1,36 @@
+@media screen and (max-width: 650px) {
+
+	#page{width:95%;min-width:460px;font-size:110%;}
+	
+	#header {
+		height: auto;
+	}
+
+	#logo {
+		position: static;
+	}
+
+	body.sidebar-second #content {
+		width: auto;
+		float: none;
+	}
+
+	#block-block-6{width:auto;}
+	
+	.search_result .info_left{width:15%;background:#fcfcfc;}
+	.search_result .info_left img{width:100%;}
+	.search_result .info_right{width:71%;}
+	
+	.search_result_overlay .column.first,
+	.search_result_overlay .column.last,
+	.search_result_overlay .column{width:auto!important;}
+	
+	#sidebar-second {
+		width: auto;
+		float: none;
+		display:block;
+	}
+
+	#footer-columns .region{width:auto;}
+
+}
